@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transport KPI Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #EEF2FA;
+  --white: #FFFFFF;
+  --nav-bg: #FFFFFF;
+  --card: #FFFFFF;
+  --border: #E4E9F5;
+  --blue: #3B5BF5;
+  --blue-light: #EEF1FF;
+  --blue-mid: #6B8CFF;
+  --green: #22C55E;
+  --green-light: #DCFCE7;
+  --red: #F43F5E;
+  --red-light: #FFF1F2;
+  --orange: #F97316;
+  --orange-light: #FFF7ED;
+  --purple: #8B5CF6;
+  --purple-light: #F5F3FF;
+  --yellow: #EAB308;
+  --yellow-light: #FEFCE8;
+  --text: #1E293B;
+  --text-2: #64748B;
+  --text-3: #94A3B8;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  --shadow-hover: 0 4px 12px rgba(0,0,0,0.08), 0 8px 32px rgba(0,0,0,0.06);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ===== NAV ===== */
+nav {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 0 var(--border);
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--blue);
+  letter-spacing: -0.5px;
+}
+.nav-brand .icon {
+  width: 32px; height: 32px;
+  background: var(--blue);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.nav-link {
+  padding: 7px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  font-family: 'DM Sans', sans-serif;
+}
+.nav-link:hover { background: var(--bg); color: var(--text); }
+.nav-link.active { background: var(--blue); color: #fff; }
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.upload-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 18px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.upload-btn:hover { background: #2a47e0; box-shadow: 0 4px 12px rgba(59,91,245,0.3); }
+
+.date-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: var(--text-2);
+  font-weight: 500;
+}
+
+.user-chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 12px 5px 5px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+}
+.avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem;
+  color: white;
+  font-weight: 700;
+}
+.user-chip span { font-size: 0.78rem; font-weight: 600; color: var(--text); }
+
+/* ===== MAIN ===== */
+.main {
+  padding: 24px 28px;
+  max-width: 1500px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.page-header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+.live-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--green);
+  font-weight: 600;
+  background: var(--green-light);
+  padding: 5px 12px;
+  border-radius: 100px;
+}
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+/* ===== KPI CARDS ===== */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+@media(max-width:1200px){ .kpi-grid{ grid-template-columns: repeat(4,1fr); } }
+@media(max-width:700px){ .kpi-grid{ grid-template-columns: repeat(2,1fr); } }
+
+.kpi-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.2s, transform 0.2s;
+  animation: fadeUp 0.4s ease both;
+}
+.kpi-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+
+@keyframes fadeUp {
+  from { opacity:0; transform: translateY(12px); }
+  to { opacity:1; transform: translateY(0); }
+}
+
+.kpi-card:nth-child(1){ animation-delay:.05s; }
+.kpi-card:nth-child(2){ animation-delay:.1s; }
+.kpi-card:nth-child(3){ animation-delay:.15s; }
+.kpi-card:nth-child(4){ animation-delay:.2s; }
+.kpi-card:nth-child(5){ animation-delay:.25s; }
+.kpi-card:nth-child(6){ animation-delay:.3s; }
+
+.kpi-stripe {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 14px 14px 0 0;
+}
+.kpi-icon-box {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+  margin-bottom: 12px;
+}
+.kpi-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 600;
+  color: var(--text-2);
+  margin-bottom: 6px;
+}
+.kpi-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -1px;
+  line-height: 1;
+  margin-bottom: 4px;
+  font-family: 'DM Mono', monospace;
+}
+.kpi-sub {
+  font-size: 0.72rem;
+  color: var(--text-3);
+}
+.kpi-pct {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 100px;
+  margin-top: 4px;
+}
+
+/* card color variants */
+.kpi-blue .kpi-stripe { background: var(--blue); }
+.kpi-blue .kpi-icon-box { background: var(--blue-light); }
+.kpi-blue .kpi-value { color: var(--blue); }
+
+.kpi-green .kpi-stripe { background: var(--green); }
+.kpi-green .kpi-icon-box { background: var(--green-light); }
+.kpi-green .kpi-value { color: var(--green); }
+
+.kpi-red .kpi-stripe { background: var(--red); }
+.kpi-red .kpi-icon-box { background: var(--red-light); }
+.kpi-red .kpi-value { color: var(--red); }
+
+.kpi-orange .kpi-stripe { background: var(--orange); }
+.kpi-orange .kpi-icon-box { background: var(--orange-light); }
+.kpi-orange .kpi-value { color: var(--orange); }
+
+.kpi-purple .kpi-stripe { background: var(--purple); }
+.kpi-purple .kpi-icon-box { background: var(--purple-light); }
+.kpi-purple .kpi-value { color: var(--purple); }
+
+.kpi-yellow .kpi-stripe { background: var(--yellow); }
+.kpi-yellow .kpi-icon-box { background: var(--yellow-light); }
+.kpi-yellow .kpi-value { color: var(--yellow); }
+
+.kpi-teal .kpi-stripe { background: #0891B2; }
+.kpi-teal .kpi-icon-box { background: #ECFEFF; }
+.kpi-teal .kpi-value { color: #0891B2; }
+
+/* ===== SMALL INV TABLE ===== */
+.inv-table { width:100%; border-collapse:collapse; font-size:.8rem; }
+.inv-table th {
+  padding:8px 12px; text-align:left;
+  font-size:.69rem; font-weight:700; text-transform:uppercase;
+  letter-spacing:.5px; color:var(--text-3);
+  border-bottom:1px solid var(--border);
+  background:var(--bg); white-space:nowrap;
+}
+.inv-table th:first-child { border-radius:8px 0 0 8px; }
+.inv-table th:last-child  { border-radius:0 8px 8px 0; }
+.inv-table td {
+  padding:9px 12px; border-bottom:1px solid var(--border);
+  color:var(--text); vertical-align:middle;
+}
+.inv-table tr:last-child td { border-bottom:none; }
+.inv-table tr:hover td { background:var(--bg); }
+.cbm-pill {
+  display:inline-flex; align-items:center; gap:4px;
+  padding:3px 9px; border-radius:100px;
+  font-size:.72rem; font-weight:700;
+  background:#ECFEFF; color:#0891B2;
+}
+.inv-scroll { max-height:320px; overflow-y:auto; }
+
+/* ===== LOSS SECTION ===== */
+.loss-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+@media(max-width:900px){ .loss-summary{ grid-template-columns: repeat(2,1fr); } }
+
+.loss-stat {
+  background: var(--white);
+  border: 1.5px solid #FFE4E8;
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 1px 4px rgba(244,63,94,.06);
+  transition: box-shadow .2s, transform .2s;
+}
+.loss-stat:hover { box-shadow: 0 4px 16px rgba(244,63,94,.1); transform: translateY(-1px); }
+.loss-stat-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; flex-shrink: 0;
+}
+.loss-stat-icon.red    { background: #FFF1F2; }
+.loss-stat-icon.orange { background: #FFF7ED; }
+.loss-stat-icon.purple { background: #F5F3FF; }
+.loss-stat-icon.yellow { background: #FEFCE8; }
+.loss-stat-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .7px; font-weight: 700; color: var(--text-3); margin-bottom: 3px; }
+.loss-stat-value { font-size: 1.45rem; font-weight: 700; letter-spacing: -.5px; font-family: 'DM Mono', monospace; line-height: 1; }
+.loss-stat-value.red    { color: #F43F5E; }
+.loss-stat-value.orange { color: #F97316; }
+.loss-stat-value.purple { color: #8B5CF6; }
+.loss-stat-value.yellow { color: #CA8A04; }
+.loss-stat-sub { font-size: .7rem; color: var(--text-3); margin-top: 3px; }
+
+.loss-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+.loss-table th {
+  padding: 9px 12px; text-align: left;
+  font-size: .69rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .5px; color: var(--text-3);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg); white-space: nowrap;
+}
+.loss-table td {
+  padding: 10px 12px; border-bottom: 1px solid var(--border);
+  color: var(--text); vertical-align: middle;
+}
+.loss-table tr:last-child td { border-bottom: none; }
+.loss-table tr:hover td { background: #FFF8F8; }
+.loss-scroll { max-height: 360px; overflow-y: auto; }
+
+.loss-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 100px;
+  font-size: .71rem; font-weight: 700;
+  background: #FFF1F2; color: #F43F5E;
+}
+.exp-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 100px;
+  font-size: .71rem; font-weight: 700;
+  background: #FFF7ED; color: #F97316;
+}
+.panel-divider {
+  height: 1px; background: var(--border); margin: 16px 0;
+}
+.sub-section-title {
+  font-size: .78rem; font-weight: 700; color: var(--text-2);
+  margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
+}
+
+.chart-row {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.chart-row.two { grid-template-columns: 1fr 1fr; }
+.chart-row.three { grid-template-columns: 1.2fr 1fr 1fr; }
+
+.panel {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px 24px;
+  box-shadow: var(--shadow);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.panel-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.panel-sub {
+  font-size: 0.75rem;
+  color: var(--text-3);
+  margin-top: 1px;
+}
+
+.toggle-group {
+  display: flex;
+  gap: 2px;
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 3px;
+}
+.toggle-btn {
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.toggle-btn.active { background: var(--white); color: var(--blue); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+
+.chart-wrap { height: 220px; position: relative; }
+.chart-wrap.tall { height: 260px; }
+.chart-wrap.short { height: 180px; }
+
+/* ===== PROGRESS SECTION ===== */
+.prog-item { margin-bottom: 12px; }
+.prog-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-2);
+  margin-bottom: 5px;
+}
+.prog-header strong { color: var(--text); font-weight: 700; }
+.prog-bar {
+  height: 7px;
+  background: var(--bg);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.prog-fill { height: 100%; border-radius: 100px; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+
+.prog-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 14px 0;
+}
+
+/* ===== ZONE DOUGHNUT LEGEND ===== */
+.donut-layout {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.donut-wrap { width: 140px; height: 140px; flex-shrink: 0; }
+.donut-legend { flex: 1; }
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--text-2);
+  padding: 3px 0;
+  justify-content: space-between;
+}
+.legend-left { display: flex; align-items: center; gap: 8px; }
+.legend-dot { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
+.legend-pct { font-weight: 700; color: var(--text); font-size: 0.72rem; }
+
+/* ===== TABLE ===== */
+.table-wrap { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+thead tr th {
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-3);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  background: var(--bg);
+}
+thead tr th:first-child { border-radius: 8px 0 0 8px; }
+thead tr th:last-child { border-radius: 0 8px 8px 0; }
+tbody tr td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: middle;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--bg); }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 100px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.badge-green { background: var(--green-light); color: var(--green); }
+.badge-red { background: var(--red-light); color: var(--red); }
+.badge-orange { background: var(--orange-light); color: var(--orange); }
+
+.rank-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  background: var(--bg);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-2);
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  color: var(--text-3);
+  gap: 10px;
+}
+.empty-state .emo { font-size: 2.5rem; }
+.empty-state p { font-size: 0.85rem; text-align: center; line-height: 1.5; }
+
+/* ===== TOAST ===== */
+#toast {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  background: var(--text);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: all 0.3s;
+  z-index: 999;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+#toast.show { opacity: 1; transform: translateY(0); }
+
+/* ===== LOADING ===== */
+#loadingOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(4px);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 14px;
+  color: var(--text);
+}
+#loadingOverlay.show { display: flex; }
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+#fileInput { display: none; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">
+    <div class="icon">🚚</div>
+    TRANSPORT
+  </div>
+  <div class="nav-links">
+    <button class="nav-link">📦 ภาพรวม</button>
+    <button class="nav-link">📍 ติดตาม</button>
+    <button class="nav-link">📄 ใบแจ้งหนี้</button>
+    <button class="nav-link active">📊 Analytics</button>
+  </div>
+  <div class="nav-right">
+    <div class="date-badge">
+      📅 <span id="lastUpdateText">—</span>
+    </div>
+    <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+      ⬆ อัปโหลด Excel
+    </button>
+    <input type="file" id="fileInput" accept=".xlsx,.xls">
+    <div class="user-chip">
+      <div class="avatar">TM</div>
+      <span>Transport Team</span>
+    </div>
+  </div>
+</nav>
+
+<!-- LOADING -->
+<div id="loadingOverlay">
+  <div class="spinner"></div>
+  <span style="font-size:.85rem;font-weight:600;color:var(--text-2)">กำลังประมวลผลข้อมูล…</span>
+</div>
+<div id="toast"></div>
+
+<div class="main">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div>
+      <h1>Analytics</h1>
+      <p style="font-size:.82rem;color:var(--text-2);margin-top:2px">KPI Dashboard — Logistics & Delivery Performance</p>
+    </div>
+    <div class="live-indicator">
+      <div class="dot"></div>
+      Live Data
+    </div>
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="kpi-grid">
+
+    <div class="kpi-card kpi-blue">
+      <div class="kpi-stripe"></div>
+      <div class="kpi-icon-box">💰</div>
+      <div class="kpi-label">ยอดขายรวม</div>
+      <div class="kpi-value" id="kTotalRev">—</div>
+      <div class="kpi-sub">Amount Incl. VAT</div>
+    </div>
+
+    <div class="kpi-card kpi-yellow">
+      <div class="kpi-stripe"></div>
+      <div class="kpi-icon-box">📄</div>
+      <div class="kpi-label">Invoice ทั้งหมด</div>
+      <div class="kpi-value" id="kInvoices">—</div>
+      <div class="kpi-sub">Distinct Invoices</div>
+    </div>
+
+    <div class="kpi-card kpi-purple">
+      <div class="kpi-stripe"></div>
+      <div class="kpi-icon-box">📦</div>
+      <div class="kpi-label">CBM รวม</div>
+      <div class="kpi-value" id="kCBM">—</div>
+      <div class="kpi-sub">Cubic Meters</div>
+    </div>
+
+    <div class="kpi-card kpi-green">
+      <div class="kpi-stripe"></div>
+      <div class="kpi-icon-box">✅</div>
+      <div class="kpi-label">OTD Rate</div>
+      <div class="kpi-value" id="kOTD">—</div>
+      <div class="kpi-sub" id="kOTDsub">Ontime Delivery</div>
+    </div>
+
+    <div class="kpi-card kpi-orange">
+      <div class="kpi-stripe"></div>
+      <div class="kpi-icon-box">📋</div>
+      <div class="kpi-label">POD Rate</div>
+      <div class="kpi-value" id="kPOD">—</div>
+      <div class="kpi-sub" id="kPODsub">Proof of Delivery</div>
+    </div>
+
+    <div class="kpi-card kpi-red">
+      <div class="kpi-stripe"></div>
+      <div class="kpi-icon-box">⚠️</div>
+      <div class="kpi-label">Not Delivered</div>
+      <div class="kpi-value" id="kNotDel">—</div>
+      <div class="kpi-sub">รายการยังไม่ส่ง</div>
+    </div>
+
+    <div class="kpi-card kpi-teal">
+      <div class="kpi-stripe"></div>
+      <div class="kpi-icon-box">📐</div>
+      <div class="kpi-label">INV CBM &lt; 0.35</div>
+      <div class="kpi-value" id="kSmallCBM">—</div>
+      <div class="kpi-sub" id="kSmallCBMsub">จาก Invoice ทั้งหมด</div>
+    </div>
+
+  </div>: Revenue by SP + Daily Trend -->
+  <div class="chart-row two" style="margin-bottom:16px">
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">ยอดขาย ตาม Salesperson</div>
+          <div class="panel-sub">Revenue by salesperson (Top 10)</div>
+        </div>
+      </div>
+      <div class="chart-wrap tall"><canvas id="chartRevSP"></canvas></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">แนวโน้มยอดขายรายวัน</div>
+          <div class="panel-sub">Daily revenue trend</div>
+        </div>
+      </div>
+      <div class="chart-wrap tall"><canvas id="chartDaily"></canvas></div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 2: OTD bar + Zone donut + KPI Progress -->
+  <div class="chart-row three" style="margin-bottom:16px">
+
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">OTD Rate ตาม Salesperson</div>
+          <div class="panel-sub">Ontime delivery %</div>
+        </div>
+        <div style="display:flex;gap:6px;font-size:.7rem">
+          <span class="badge badge-green">≥95%</span>
+          <span class="badge badge-orange">≥80%</span>
+          <span class="badge badge-red">&lt;80%</span>
+        </div>
+      </div>
+      <div class="chart-wrap tall"><canvas id="chartOTDSP"></canvas></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">สัดส่วนตาม Zone</div>
+          <div class="panel-sub">Revenue by delivery zone</div>
+        </div>
+      </div>
+      <div class="donut-layout" style="margin-top:8px">
+        <div class="donut-wrap"><canvas id="chartZone"></canvas></div>
+        <div class="donut-legend" id="zoneLegend">
+          <div class="empty-state" style="padding:12px">
+            <div class="emo" style="font-size:1.5rem">📊</div>
+            <p style="font-size:.7rem">โหลดข้อมูลเพื่อดู Zone</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">OTD & POD Status</div>
+          <div class="panel-sub">Delivery performance breakdown</div>
+        </div>
+      </div>
+      <div id="kpiProgressSection">
+        <div class="empty-state" style="padding:24px">
+          <div class="emo">📂</div>
+          <p>กรุณาอัปโหลดไฟล์ Excel<br>เพื่อแสดงข้อมูล</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- INV CBM < 0.35 PANEL -->
+  <div class="panel" style="margin-bottom:16px" id="smallCBMPanel">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">📐 Invoice ที่มี CBM รวม &lt; 0.35</div>
+        <div class="panel-sub">Invoice แต่ละใบที่ CBM รวมไม่ถึง 0.35 ลูกบาศก์เมตร</div>
+      </div>
+      <span id="smallCBMCount" style="font-size:.8rem;font-weight:700;color:#0891B2;background:#ECFEFF;padding:5px 14px;border-radius:100px;">0 รายการ</span>
+    </div>
+    <div class="inv-scroll">
+      <table class="inv-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Invoice No</th>
+            <th>CBM รวม</th>
+            <th>ยอดขาย (฿)</th>
+            <th>QTY</th>
+            <th>Salesperson</th>
+            <th>Zone</th>
+          </tr>
+        </thead>
+        <tbody id="smallCBMBody">
+          <tr><td colspan="7"><div class="empty-state"><div class="emo">📂</div><p>โหลดข้อมูลเพื่อดูรายการ</p></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- LOSS & EXPENSE PANEL -->
+  <div class="panel" style="margin-bottom:16px">
+
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">🚨 รายการสินค้า Loss & ค่าใช้จ่าย</div>
+        <div class="panel-sub">รายการที่ส่งไม่สำเร็จ — สรุปจำนวน, CBM และมูลค่าความเสียหาย</div>
+      </div>
+      <span id="lossTotalCount" style="font-size:.8rem;font-weight:700;color:#F43F5E;background:#FFF1F2;padding:5px 14px;border-radius:100px;">0 รายการ</span>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="loss-summary">
+      <div class="loss-stat">
+        <div class="loss-stat-icon red">📦</div>
+        <div class="loss-stat-body">
+          <div class="loss-stat-label">จำนวนรายการ Loss</div>
+          <div class="loss-stat-value red" id="lossCount">—</div>
+          <div class="loss-stat-sub">รายการสินค้า</div>
+        </div>
+      </div>
+      <div class="loss-stat">
+        <div class="loss-stat-icon purple">📐</div>
+        <div class="loss-stat-body">
+          <div class="loss-stat-label">CBM รวม (Loss)</div>
+          <div class="loss-stat-value purple" id="lossCBM">—</div>
+          <div class="loss-stat-sub">ลูกบาศก์เมตร</div>
+        </div>
+      </div>
+      <div class="loss-stat">
+        <div class="loss-stat-icon red">💸</div>
+        <div class="loss-stat-body">
+          <div class="loss-stat-label">มูลค่าสินค้า Loss</div>
+          <div class="loss-stat-value red" id="lossValue">—</div>
+          <div class="loss-stat-sub">บาท (Incl.VAT)</div>
+        </div>
+      </div>
+      <div class="loss-stat" style="border-color:#FED7AA">
+        <div class="loss-stat-icon orange">🧾</div>
+        <div class="loss-stat-body">
+          <div class="loss-stat-label">ค่าใช้จ่ายรวม</div>
+          <div class="loss-stat-value orange" id="totalExpense">—</div>
+          <div class="loss-stat-sub" id="totalExpenseSub">รวมทุกรายการ</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loss Table -->
+    <div class="sub-section-title">🔴 รายการ Loss ทั้งหมด</div>
+    <div class="loss-scroll">
+      <table class="loss-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Invoice No</th>
+            <th>สถานะ</th>
+            <th>สินค้า / Remark</th>
+            <th>จำนวน (QTY)</th>
+            <th>CBM</th>
+            <th>มูลค่า (฿)</th>
+            <th>ค่าใช้จ่าย (฿)</th>
+            <th>Salesperson</th>
+            <th>Zone</th>
+          </tr>
+        </thead>
+        <tbody id="lossTableBody">
+          <tr><td colspan="10"><div class="empty-state"><div class="emo">📂</div><p>โหลดข้อมูลเพื่อดูรายการ</p></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- EXPENSE BREAKDOWN PANEL -->
+  <div class="chart-row two" style="margin-bottom:16px">
+
+    <!-- By Transport Type -->
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">🚛 ค่าใช้จ่าย แยกตามประเภทขนส่ง</div>
+          <div class="panel-sub">Expense breakdown by transport / carrier type</div>
+        </div>
+        <span id="expTransportTotal" style="font-size:.8rem;font-weight:700;color:#F97316;background:#FFF7ED;padding:5px 14px;border-radius:100px;">฿0</span>
+      </div>
+      <div class="chart-wrap" style="height:200px"><canvas id="chartExpTransport"></canvas></div>
+      <div class="panel-divider"></div>
+      <div class="sub-section-title">📋 รายละเอียด</div>
+      <div class="loss-scroll" style="max-height:200px">
+        <table class="loss-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>ประเภทขนส่ง</th>
+              <th>จำนวนรายการ</th>
+              <th>CBM รวม</th>
+              <th>ค่าใช้จ่าย (฿)</th>
+              <th>% ของรวม</th>
+            </tr>
+          </thead>
+          <tbody id="expTransportBody">
+            <tr><td colspan="6"><div class="empty-state" style="padding:16px"><div class="emo">📂</div><p>โหลดข้อมูล</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- By Sale Code -->
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">👤 ค่าใช้จ่าย แยกตาม Sale Code</div>
+          <div class="panel-sub">Expense breakdown by salesperson / sale code</div>
+        </div>
+        <span id="expSaleTotal" style="font-size:.8rem;font-weight:700;color:#F97316;background:#FFF7ED;padding:5px 14px;border-radius:100px;">฿0</span>
+      </div>
+      <div class="chart-wrap" style="height:200px"><canvas id="chartExpSale"></canvas></div>
+      <div class="panel-divider"></div>
+      <div class="sub-section-title">📋 รายละเอียด</div>
+      <div class="loss-scroll" style="max-height:200px">
+        <table class="loss-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Sale Code / Salesperson</th>
+              <th>จำนวนรายการ</th>
+              <th>CBM รวม</th>
+              <th>ค่าใช้จ่าย (฿)</th>
+              <th>% ของรวม</th>
+            </tr>
+          </thead>
+          <tbody id="expSaleBody">
+            <tr><td colspan="6"><div class="empty-state" style="padding:16px"><div class="emo">📂</div><p>โหลดข้อมูล</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TABLE -->
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">รายละเอียด Salesperson</div>
+        <div class="panel-sub">ข้อมูลยอดขายและ KPI รายบุคคล</div>
+      </div>
+      <div style="font-size:.75rem;color:var(--text-3)">Top 20</div>
+    </div>
+    <div class="table-wrap">
+      <table id="spTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Salesperson</th>
+            <th>ยอดขาย (฿)</th>
+            <th>QTY</th>
+            <th>CBM</th>
+            <th>OTD Ontime</th>
+            <th>OTD Not-Ontime</th>
+            <th>OTD Rate %</th>
+            <th>POD Rate %</th>
+          </tr>
+        </thead>
+        <tbody id="spTableBody">
+          <tr>
+            <td colspan="9">
+              <div class="empty-state">
+                <div class="emo">📂</div>
+                <p>กรุณาอัปโหลดไฟล์ Excel เพื่อแสดงข้อมูล</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+// ===== CHART INSTANCES =====
+let charts = {};
+
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+// Chart.js global defaults for light theme
+Chart.defaults.color = '#94A3B8';
+Chart.defaults.borderColor = '#E4E9F5';
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+
+// ===== FORMAT =====
+function fmtMoney(n) {
+  if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return (n/1e3).toFixed(0) + 'K';
+  return n.toFixed(0);
+}
+function fmtFull(n) {
+  return new Intl.NumberFormat('th-TH').format(Math.round(n));
+}
+function pct(n) { return (n * 100).toFixed(1) + '%'; }
+
+// ===== PARSE EXCEL =====
+function parseExcel(arrayBuffer) {
+  const wb = XLSX.read(arrayBuffer, { type: 'array', cellDates: true });
+  const sheetName = wb.SheetNames.find(s => s.toLowerCase().includes('detail') || s.toLowerCase().includes('invoice')) || wb.SheetNames[0];
+  const ws = wb.Sheets[sheetName];
+  return XLSX.utils.sheet_to_json(ws, { defval: null });
+}
+
+// ===== PROCESS =====
+function processData(rows) {
+  const sample = rows[0] || {};
+  const keys = Object.keys(sample);
+  const col = (aliases) => keys.find(k => aliases.some(a => k.toLowerCase().includes(a.toLowerCase()))) || '';
+
+  const colAmt    = col(['Amount (Incl.VAT)', 'Amount Incl', 'amount']);
+  const colSP     = col(['Salesperson', 'salesperson']);
+  const colOTD    = col(['KPI OTD', 'kpi otd']);
+  const colPOD    = col(['KPI POD', 'kpi pod']);
+  const colZone   = col(['ZONE', 'zone']);
+  const colQTY    = col(['QTY', 'qty']);
+  const colCBM    = col(['CBM', 'cbm']);
+  const colInv    = col(['Invoice No', 'invoice']);
+  const colDate   = col(['Delivery Date', 'delivery']);
+  const colStatus = col(['Status', 'status', 'สถานะ']);
+  const colRemark = col(['Remark', 'remark', 'หมายเหตุ', 'note', 'reason']);
+  const colLoss   = col(['Loss', 'loss', 'damage', 'ความเสียหาย']);
+  const colExp      = col(['Cost', 'cost', 'Expense', 'expense', 'ค่าใช้จ่าย', 'charge', 'Charge', 'Fee', 'fee']);
+  const colTransport= col(['Transport Type', 'transport', 'carrier', 'ประเภทขนส่ง', 'vehicle', 'truck', 'mode', 'Shipment Type']);
+  const colSaleCode = col(['Sale Code', 'sale code', 'salecode', 'รหัสขาย', 'sp code', 'spcode', 'Sales Code']);
+
+  let totalRev = 0, totalQTY = 0, totalCBM = 0;
+  let otdOn = 0, otdOff = 0, otdND = 0;
+  let podOn = 0, podOff = 0, podND = 0;
+  let totalExpense = 0;
+  const invoices = new Set();
+  const bySP = {}, byZone = {}, byDate = {};
+  const invMap = {};
+  const lossRows = [];
+  const byTransport = {}; // expense by transport type
+  const bySaleCode  = {}; // expense by sale code
+
+  rows.forEach(r => {
+    const amt    = parseFloat(r[colAmt]) || 0;
+    const qty    = parseFloat(r[colQTY]) || 0;
+    const cbm    = parseFloat(r[colCBM]) || 0;
+    const sp     = (r[colSP] || 'Unknown').trim();
+    const zone   = (r[colZone] || 'Unknown').trim();
+    const inv    = r[colInv] || '';
+    const kpiOTD = (r[colOTD] || '').trim();
+    const kpiPOD = (r[colPOD] || '').trim();
+    const status = (r[colStatus] || '').toString().trim();
+    const remark = (r[colRemark] || '').toString().trim();
+    const lossRaw    = (r[colLoss]      || '').toString().trim();
+    const exp        = parseFloat(r[colExp]) || 0;
+    const transport  = (r[colTransport] || 'ไม่ระบุ').toString().trim() || 'ไม่ระบุ';
+    const saleCode   = (r[colSaleCode]  || sp).toString().trim() || sp;
+
+    // Detect Loss: dedicated col, status/kpi contains 'loss', or remark contains 'loss'
+    const isLoss = lossRaw !== '' && lossRaw !== '0' && lossRaw.toLowerCase() !== 'false'
+      || kpiOTD.toLowerCase().includes('loss')
+      || kpiPOD.toLowerCase().includes('loss')
+      || status.toLowerCase().includes('loss')
+      || remark.toLowerCase().includes('loss');
+
+    let dateStr = '';
+
+    if (r[colDate]) {
+      const d = r[colDate];
+      if (d instanceof Date) dateStr = d.toISOString().slice(0,10);
+      else if (typeof d === 'number') {
+        dateStr = new Date((d-25569)*86400000).toISOString().slice(0,10);
+      } else dateStr = String(d).slice(0,10);
+    }
+
+    totalRev += amt; totalQTY += qty; totalCBM += cbm;
+    if (inv) invoices.add(inv);
+
+    if (kpiOTD === 'Ontime') otdOn++;
+    else if (kpiOTD === 'Not-ontime') otdOff++;
+    else if (kpiOTD) otdND++;
+
+    if (kpiPOD === 'Ontime') podOn++;
+    else if (kpiPOD === 'Not-ontime') podOff++;
+    else if (kpiPOD) podND++;
+
+    if (sp) {
+      if (!bySP[sp]) bySP[sp] = { rev:0, qty:0, cbm:0, otdOn:0, otdOff:0, otdND:0, podOn:0, podOff:0 };
+      bySP[sp].rev += amt; bySP[sp].qty += qty; bySP[sp].cbm += cbm;
+      if (kpiOTD === 'Ontime') bySP[sp].otdOn++;
+      else if (kpiOTD === 'Not-ontime') bySP[sp].otdOff++;
+      else if (kpiOTD) bySP[sp].otdND++;
+      if (kpiPOD === 'Ontime') bySP[sp].podOn++;
+      else if (kpiPOD === 'Not-ontime') bySP[sp].podOff++;
+    }
+
+    if (zone && zone !== 'Unknown') byZone[zone] = (byZone[zone] || 0) + amt;
+    if (dateStr) byDate[dateStr] = (byDate[dateStr] || 0) + amt;
+
+    // Expense accumulation
+    totalExpense += exp;
+
+    // Expense by transport type
+    if (!byTransport[transport]) byTransport[transport] = { exp:0, count:0, cbm:0 };
+    byTransport[transport].exp   += exp;
+    byTransport[transport].count += 1;
+    byTransport[transport].cbm   += cbm;
+
+    // Expense by sale code (fallback to salesperson name if no sale code col)
+    if (!bySaleCode[saleCode]) bySaleCode[saleCode] = { exp:0, count:0, cbm:0 };
+    bySaleCode[saleCode].exp   += exp;
+    bySaleCode[saleCode].count += 1;
+    bySaleCode[saleCode].cbm   += cbm;
+
+    // Loss rows
+    if (isLoss) {
+      lossRows.push({ inv, sp, zone, qty, cbm, amt, exp,
+        statusLabel: kpiOTD.toLowerCase().includes('loss') ? kpiOTD
+          : kpiPOD.toLowerCase().includes('loss') ? kpiPOD
+          : status || lossRaw || 'Loss',
+        remark });
+    }
+
+    // Track per-invoice CBM
+    if (inv) {
+      if (!invMap[inv]) invMap[inv] = { cbm:0, rev:0, qty:0, sp, zone };
+      invMap[inv].cbm += cbm;
+      invMap[inv].rev += amt;
+      invMap[inv].qty += qty;
+    }
+  });
+
+  const otdTotal = otdOn + otdOff + otdND;
+  const podTotal = podOn + podOff + podND;
+
+  // Filter invoices with total CBM < 0.35
+  const smallCBMInvs = Object.entries(invMap)
+    .filter(([, v]) => v.cbm < 0.35)
+    .sort((a,b) => a[1].cbm - b[1].cbm);
+
+  return {
+    totalRev, totalQTY, totalCBM,
+    invoices: invoices.size,
+    otdOn, otdOff, otdND, otdTotal,
+    podOn, podOff, podND, podTotal,
+    otdRate: otdTotal ? otdOn/otdTotal : 0,
+    podRate: podTotal ? podOn/podTotal : 0,
+    byDate, byZone, bySP,
+    smallCBMInvs,
+    lossRows, totalExpense,
+    byTransport, bySaleCode
+  };
+}
+
+// ===== RENDER =====
+function renderDashboard(data) {
+  // KPI Cards
+  document.getElementById('kTotalRev').textContent = fmtMoney(data.totalRev);
+  document.getElementById('kInvoices').textContent = fmtFull(data.invoices);
+  document.getElementById('kCBM').textContent = data.totalCBM.toFixed(0);
+  document.getElementById('kOTD').textContent = pct(data.otdRate);
+  document.getElementById('kOTDsub').textContent = `${fmtFull(data.otdOn)} / ${fmtFull(data.otdTotal)} รายการ`;
+  document.getElementById('kPOD').textContent = pct(data.podRate);
+  document.getElementById('kPODsub').textContent = `${fmtFull(data.podOn)} / ${fmtFull(data.podTotal)} รายการ`;
+  document.getElementById('kNotDel').textContent = fmtFull(data.otdND);
+
+  // ===== LOSS SECTION =====
+  const lossCBMTotal  = data.lossRows.reduce((s,r) => s+r.cbm, 0);
+  const lossValTotal  = data.lossRows.reduce((s,r) => s+r.amt, 0);
+  const lossExpTotal  = data.lossRows.reduce((s,r) => s+r.exp, 0);
+
+  document.getElementById('lossCount').textContent   = fmtFull(data.lossRows.length);
+  document.getElementById('lossCBM').textContent     = lossCBMTotal.toFixed(3);
+  document.getElementById('lossValue').textContent   = fmtMoney(lossValTotal);
+  document.getElementById('lossTotalCount').textContent = `${fmtFull(data.lossRows.length)} รายการ`;
+
+  // Expense card: show loss expense if available, otherwise total expense
+  const expDisplay = lossExpTotal > 0 ? lossExpTotal : data.totalExpense;
+  document.getElementById('totalExpense').textContent    = fmtMoney(expDisplay);
+  document.getElementById('totalExpenseSub').textContent = lossExpTotal > 0
+    ? 'ค่าใช้จ่ายส่วน Loss' : 'ค่าใช้จ่ายรวมทุกรายการ';
+
+  // Loss table
+  const lossBody = document.getElementById('lossTableBody');
+  if (data.lossRows.length === 0) {
+    lossBody.innerHTML = `<tr><td colspan="10"><div class="empty-state">
+      <div class="emo">✅</div><p>ไม่พบรายการ Loss ในข้อมูล<br><small style="color:var(--text-3)">ระบบตรวจสอบจากคอลัมน์ Loss, Status, KPI OTD/POD, Remark</small></p>
+    </div></td></tr>`;
+  } else {
+    lossBody.innerHTML = data.lossRows.map((r, i) => `
+      <tr>
+        <td style="color:var(--text-3);font-size:.75rem">${i+1}</td>
+        <td style="font-weight:600;font-family:'DM Mono',monospace">${r.inv || '—'}</td>
+        <td><span class="loss-tag">🚨 ${r.statusLabel}</span></td>
+        <td style="color:var(--text-2);font-size:.78rem;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.remark || '—'}</td>
+        <td style="text-align:center">${fmtFull(r.qty)}</td>
+        <td><span style="font-weight:700;color:#8B5CF6">${r.cbm.toFixed(3)}</span></td>
+        <td style="font-weight:700;color:#F43F5E;font-family:'DM Mono',monospace">${fmtFull(r.amt)}</td>
+        <td>${r.exp > 0 ? `<span class="exp-tag">🧾 ${fmtFull(r.exp)}</span>` : '<span style="color:var(--text-3)">—</span>'}</td>
+        <td>${r.sp}</td>
+        <td>${r.zone}</td>
+      </tr>`).join('');
+  }
+
+  // ===== EXPENSE BREAKDOWN =====
+  const mkExpTable = (entries, bodyId, totalId) => {
+    const totalExp = entries.reduce((s,[,v]) => s+v.exp, 0);
+    document.getElementById(totalId).textContent = '฿' + fmtFull(totalExp);
+    const tbody = document.getElementById(bodyId);
+    if (totalExp === 0) {
+      tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state" style="padding:16px">
+        <div class="emo">🧾</div><p>ไม่พบข้อมูลค่าใช้จ่าย<br><small style="color:var(--text-3)">ตรวจสอบคอลัมน์ Cost/Expense/Fee ในไฟล์</small></p>
+      </div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = entries.map(([name, v], i) => {
+      const pctVal = totalExp ? (v.exp / totalExp * 100).toFixed(1) : 0;
+      return `<tr>
+        <td style="color:var(--text-3);font-size:.75rem">${i+1}</td>
+        <td style="font-weight:600">${name}</td>
+        <td style="text-align:center">${fmtFull(v.count)}</td>
+        <td style="color:#8B5CF6;font-weight:600">${v.cbm.toFixed(2)}</td>
+        <td style="font-weight:700;color:#F97316;font-family:'DM Mono',monospace">${fmtFull(v.exp)}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div style="flex:1;height:6px;background:#F1F5F9;border-radius:100px;overflow:hidden">
+              <div style="height:100%;width:${pctVal}%;background:linear-gradient(90deg,#F97316,#EAB308);border-radius:100px"></div>
+            </div>
+            <span style="font-size:.7rem;font-weight:700;color:#F97316;width:32px;text-align:right">${pctVal}%</span>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  };
+
+  // Transport chart + table
+  const transportEntries = Object.entries(data.byTransport)
+    .filter(([,v]) => v.exp > 0)
+    .sort((a,b) => b[1].exp - a[1].exp);
+  mkExpTable(transportEntries, 'expTransportBody', 'expTransportTotal');
+  if (transportEntries.length > 0) {
+    const TCOLORS = ['rgba(249,115,22,.75)','rgba(234,179,8,.75)','rgba(59,91,245,.65)','rgba(139,92,246,.65)','rgba(34,197,94,.65)','rgba(244,63,94,.65)','rgba(8,145,178,.65)','rgba(236,72,153,.65)'];
+    renderHBarExp('chartExpTransport',
+      transportEntries.map(e => e[0].length > 20 ? e[0].slice(0,20)+'…' : e[0]),
+      transportEntries.map(e => e[1].exp),
+      transportEntries.map((_,i) => TCOLORS[i % TCOLORS.length]));
+  }
+
+  // Sale code chart + table
+  const saleEntries = Object.entries(data.bySaleCode)
+    .filter(([,v]) => v.exp > 0)
+    .sort((a,b) => b[1].exp - a[1].exp)
+    .slice(0, 20);
+  mkExpTable(saleEntries, 'expSaleBody', 'expSaleTotal');
+  if (saleEntries.length > 0) {
+    const SCOLORS = ['rgba(59,91,245,.7)','rgba(139,92,246,.7)','rgba(34,197,94,.7)','rgba(249,115,22,.7)','rgba(244,63,94,.7)','rgba(8,145,178,.7)','rgba(234,179,8,.7)','rgba(236,72,153,.7)'];
+    renderHBarExp('chartExpSale',
+      saleEntries.map(e => e[0].length > 20 ? e[0].slice(0,20)+'…' : e[0]),
+      saleEntries.map(e => e[1].exp),
+      saleEntries.map((_,i) => SCOLORS[i % SCOLORS.length]));
+  }
+
+  document.getElementById('kSmallCBM').textContent = fmtFull(data.smallCBMInvs.length);
+  document.getElementById('kSmallCBMsub').textContent = `จาก ${fmtFull(data.invoices)} Invoice ทั้งหมด`;
+  document.getElementById('smallCBMCount').textContent = `${fmtFull(data.smallCBMInvs.length)} รายการ`;
+
+  // Small CBM table
+  const scBody = document.getElementById('smallCBMBody');
+  if (data.smallCBMInvs.length === 0) {
+    scBody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="emo">✅</div><p>ไม่มี Invoice ที่มี CBM &lt; 0.35</p></div></td></tr>`;
+  } else {
+    scBody.innerHTML = data.smallCBMInvs.map(([inv, v], i) => `
+      <tr>
+        <td style="color:var(--text-3);font-size:.75rem">${i+1}</td>
+        <td style="font-weight:600;font-family:'DM Mono',monospace">${inv}</td>
+        <td><span class="cbm-pill">📐 ${v.cbm.toFixed(3)}</span></td>
+        <td style="font-weight:600;color:var(--blue);font-family:'DM Mono',monospace">${fmtFull(v.rev)}</td>
+        <td>${fmtFull(v.qty)}</td>
+        <td>${v.sp}</td>
+        <td>${v.zone}</td>
+      </tr>`).join('');
+  }
+
+  // Revenue by SP
+  const spEntries = Object.entries(data.bySP).sort((a,b)=>b[1].rev-a[1].rev).slice(0,10);
+  renderBarChart('chartRevSP', spEntries.map(e=>e[0]), spEntries.map(e=>e[1].rev));
+
+  // Daily line
+  const datesSorted = Object.keys(data.byDate).sort();
+  renderLineChart('chartDaily', datesSorted.map(d=>d.slice(5)), datesSorted.map(d=>data.byDate[d]));
+
+  // OTD horizontal bar
+  const spOTD = Object.entries(data.bySP)
+    .filter(e => (e[1].otdOn+e[1].otdOff+e[1].otdND)>0)
+    .map(e => {
+      const tot = e[1].otdOn+e[1].otdOff+e[1].otdND;
+      return { name: e[0], rate: tot ? e[1].otdOn/tot*100 : 0 };
+    })
+    .sort((a,b)=>b.rate-a.rate).slice(0,10);
+  renderHBar('chartOTDSP', spOTD.map(e=>e.name), spOTD.map(e=>e.rate));
+
+  // Zone donut
+  const zoneEntries = Object.entries(data.byZone).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const ZONE_COLORS = ['#3B5BF5','#22C55E','#F97316','#8B5CF6','#EAB308','#F43F5E','#06B6D4','#EC4899'];
+  renderDoughnut('chartZone', zoneEntries.map(e=>e[0]), zoneEntries.map(e=>e[1]), ZONE_COLORS);
+
+  // Zone legend
+  const totalZone = zoneEntries.reduce((s,e)=>s+e[1],0);
+  const legend = document.getElementById('zoneLegend');
+  legend.innerHTML = zoneEntries.map((e,i) => `
+    <div class="legend-item">
+      <div class="legend-left">
+        <div class="legend-dot" style="background:${ZONE_COLORS[i]}"></div>
+        <span>${e[0].length>16?e[0].slice(0,16)+'…':e[0]}</span>
+      </div>
+      <span class="legend-pct">${totalZone ? (e[1]/totalZone*100).toFixed(0) : 0}%</span>
+    </div>`).join('');
+
+  // Progress bars
+  const prog = document.getElementById('kpiProgressSection');
+  const mkProg = (label, val, total, color) => {
+    const p = total ? val/total*100 : 0;
+    return `<div class="prog-item">
+      <div class="prog-header"><span>${label}</span><strong>${fmtFull(val)} รายการ (${p.toFixed(1)}%)</strong></div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${p}%;background:${color}"></div></div>
+    </div>`;
+  };
+  prog.innerHTML = `
+    ${mkProg('OTD Ontime', data.otdOn, data.otdTotal, 'linear-gradient(90deg,#3B5BF5,#22C55E)')}
+    ${mkProg('OTD Not-Ontime', data.otdOff, data.otdTotal, '#F43F5E')}
+    ${mkProg('OTD Not Delivered', data.otdND, data.otdTotal, '#EAB308')}
+    <div class="prog-divider"></div>
+    ${mkProg('POD Ontime', data.podOn, data.podTotal, 'linear-gradient(90deg,#8B5CF6,#3B5BF5)')}
+    ${mkProg('POD Not-Ontime', data.podOff, data.podTotal, '#F97316')}
+    ${mkProg('POD Not Delivered', data.podND, data.podTotal, '#EAB308')}`;
+
+  // Table
+  const tbody = document.getElementById('spTableBody');
+  const rows = Object.entries(data.bySP).sort((a,b)=>b[1].rev-a[1].rev).slice(0,20);
+  tbody.innerHTML = rows.map(([name, s], i) => {
+    const tot = s.otdOn+s.otdOff+s.otdND;
+    const otdPct = tot ? (s.otdOn/tot*100) : 0;
+    const podTot = s.podOn+s.podOff;
+    const podPct = podTot ? (s.podOn/podTot*100) : 0;
+    const otdClass = otdPct >= 95 ? 'badge-green' : otdPct >= 80 ? 'badge-orange' : 'badge-red';
+    return `<tr>
+      <td><span class="rank-num">${i+1}</span></td>
+      <td style="font-weight:600">${name}</td>
+      <td style="font-weight:700;color:var(--blue);font-family:'DM Mono',monospace">${fmtFull(s.rev)}</td>
+      <td>${fmtFull(s.qty)}</td>
+      <td>${s.cbm.toFixed(1)}</td>
+      <td><span class="badge badge-green">${fmtFull(s.otdOn)}</span></td>
+      <td><span class="badge badge-red">${fmtFull(s.otdOff)}</span></td>
+      <td><span class="badge ${otdClass}">${otdPct.toFixed(1)}%</span></td>
+      <td>${podPct.toFixed(1)}%</td>
+    </tr>`;
+  }).join('');
+}
+
+// ===== CHART HELPERS =====
+function renderBarChart(id, labels, vals) {
+  destroyChart(id);
+  const ctx = document.getElementById(id).getContext('2d');
+  charts[id] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: vals,
+        backgroundColor: 'rgba(59,91,245,0.15)',
+        borderColor: 'rgba(59,91,245,0.8)',
+        borderWidth: 1.5,
+        borderRadius: 6,
+        hoverBackgroundColor: 'rgba(59,91,245,0.3)'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ' ฿' + fmtFull(ctx.raw) } }
+      },
+      scales: {
+        x: { ticks: { maxRotation: 35, font:{size:10} }, grid: { display: false } },
+        y: { ticks: { callback: v => fmtMoney(v), font:{size:10} }, grid: { color: '#F1F5F9' } }
+      }
+    }
+  });
+}
+
+function renderLineChart(id, labels, vals) {
+  destroyChart(id);
+  const ctx = document.getElementById(id).getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 0, 260);
+  grad.addColorStop(0, 'rgba(59,91,245,0.15)');
+  grad.addColorStop(1, 'rgba(59,91,245,0)');
+  charts[id] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: vals,
+        borderColor: '#3B5BF5',
+        backgroundColor: grad,
+        borderWidth: 2,
+        pointRadius: 3,
+        pointBackgroundColor: '#3B5BF5',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ' ฿' + fmtFull(ctx.raw) } }
+      },
+      scales: {
+        x: { ticks: { font:{size:10}, maxTicksLimit: 12 }, grid: { display: false } },
+        y: { ticks: { callback: v => fmtMoney(v), font:{size:10} }, grid: { color: '#F1F5F9' } }
+      }
+    }
+  });
+}
+
+function renderHBar(id, labels, vals) {
+  destroyChart(id);
+  const ctx = document.getElementById(id).getContext('2d');
+  const colors = vals.map(v =>
+    v >= 95 ? 'rgba(34,197,94,0.7)' : v >= 80 ? 'rgba(249,115,22,0.7)' : 'rgba(244,63,94,0.7)'
+  );
+  charts[id] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{ data: vals, backgroundColor: colors, borderRadius: 4 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.raw.toFixed(1)}%` } }
+      },
+      scales: {
+        x: { min: 0, max: 100, ticks: { callback: v => v+'%', font:{size:10} }, grid: { color: '#F1F5F9' } },
+        y: { ticks: { font:{size:10} }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+function renderHBarExp(id, labels, vals, colors) {
+  destroyChart(id);
+  const ctx = document.getElementById(id).getContext('2d');
+  charts[id] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{ data: vals, backgroundColor: colors, borderRadius: 5 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ' ฿' + fmtFull(ctx.raw) } }
+      },
+      scales: {
+        x: { ticks: { callback: v => fmtMoney(v), font:{size:10} }, grid: { color: '#F1F5F9' } },
+        y: { ticks: { font:{size:10} }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+function renderDoughnut(id, labels, vals, colors) {
+  destroyChart(id);
+  const ctx = document.getElementById(id).getContext('2d');
+  charts[id] = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{ data: vals, backgroundColor: colors, borderColor: '#fff', borderWidth: 2 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '70%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ฿${fmtMoney(ctx.raw)}` } }
+      }
+    }
+  });
+}
+
+// ===== FILE UPLOAD =====
+document.getElementById('fileInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  document.getElementById('loadingOverlay').classList.add('show');
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const rows = parseExcel(ev.target.result);
+      const data = processData(rows);
+      renderDashboard(data);
+      const ts = new Date().toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' });
+      document.getElementById('lastUpdateText').textContent = ts;
+      localStorage.setItem('kpiLastUpdate', ts);
+      showToast('✅ อัปเดตสำเร็จ: ' + file.name);
+    } catch(err) {
+      showToast('❌ เกิดข้อผิดพลาด: ' + err.message);
+    } finally {
+      document.getElementById('loadingOverlay').classList.remove('show');
+      e.target.value = '';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+window.addEventListener('load', () => {
+  const lu = localStorage.getItem('kpiLastUpdate');
+  if (lu) document.getElementById('lastUpdateText').textContent = lu;
+});
+</script>
+</body>
+</html>
